@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>词库随机选择器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 500px;
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+        
+        .word-bank {
+            margin-bottom: 30px;
+        }
+        
+        .word-bank h2 {
+            color: #555;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        
+        textarea {
+            width: 100%;
+            height: 200px;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            line-height: 1.6;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: #2575fc;
+        }
+        
+        .result-area {
+            text-align: center;
+            margin: 30px 0;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border: 2px dashed #dee2e6;
+        }
+        
+        .selected-word {
+            font-size: 36px;
+            font-weight: bold;
+            color: #2575fc;
+            min-height: 50px;
+            margin-bottom: 20px;
+        }
+        
+        .placeholder {
+            color: #6c757d;
+            font-style: italic;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+        
+        button {
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .select-btn {
+            background: #2575fc;
+            color: white;
+            flex: 2;
+        }
+        
+        .select-btn:hover {
+            background: #1c65e0;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(37, 117, 252, 0.3);
+        }
+        
+        .reselection-btn {
+            background: #6c757d;
+            color: white;
+            flex: 1;
+        }
+        
+        .reselection-btn:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+        
+        .word-count {
+            text-align: right;
+            color: #6c757d;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #6c757d;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>词库随机选择器</h1>
+        
+        <div class="word-bank">
+            <h2>输入词库（每行一个词语）</h2>
+            <textarea id="wordInput" placeholder="输入你的词库，每行一个词语...
+例如：
+苹果
+香蕉
+橙子
+葡萄
+西瓜
+..."></textarea>
+            <div class="word-count">词语数量: <span id="wordCount">0</span></div>
+        </div>
+        
+        <div class="result-area">
+            <div class="selected-word">
+                <span id="selectedWord" class="placeholder">等待选择...</span>
+            </div>
+            <div class="buttons">
+                <button id="selectRandom" class="select-btn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                        <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                        <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                    </svg>
+                    随机选择
+                </button>
+                <button id="reselect" class="reselection-btn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M23 4v6h-6"></path>
+                        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                    </svg>
+                    重新选择
+                </button>
+            </div>
+        </div>
+        
+        <div class="footer">
+            纯静态页面 | 数据仅保存在当前页面中
+        </div>
+    </div>
+
+    <script>
+        // 初始化示例词库
+        const exampleWords = [
+            '苹果', '香蕉', '橙子', '葡萄', '西瓜',
+            '草莓', '芒果', '桃子', '樱桃', '柠檬',
+            '菠萝', '梨子', '柿子', '石榴', '椰子',
+            '火龙果', '猕猴桃', '哈密瓜', '木瓜', '山竹'
+        ];
+        
+        // 获取DOM元素
+        const wordInput = document.getElementById('wordInput');
+        const wordCount = document.getElementById('wordCount');
+        const selectedWord = document.getElementById('selectedWord');
+        const selectRandomBtn = document.getElementById('selectRandom');
+        const reselectBtn = document.getElementById('reselect');
+        
+        // 当前选中的词
+        let currentSelectedWord = '';
+        
+        // 初始化页面
+        function initPage() {
+            // 设置示例词库
+            wordInput.value = exampleWords.join('\n');
+            updateWordCount();
+            
+            // 添加事件监听
+            wordInput.addEventListener('input', updateWordCount);
+            selectRandomBtn.addEventListener('click', selectRandomWord);
+            reselectBtn.addEventListener('click', selectRandomWord);
+        }
+        
+        // 更新词语数量显示
+        function updateWordCount() {
+            const text = wordInput.value.trim();
+            const words = text.split('\n')
+                .map(word => word.trim())
+                .filter(word => word.length > 0);
+            
+            wordCount.textContent = words.length;
+            
+            // 如果没有词语，禁用按钮
+            if (words.length === 0) {
+                selectRandomBtn.disabled = true;
+                reselectBtn.disabled = true;
+            } else {
+                selectRandomBtn.disabled = false;
+                reselectBtn.disabled = false;
+            }
+        }
+        
+        // 随机选择一个词语
+        function selectRandomWord() {
+            const text = wordInput.value.trim();
+            const words = text.split('\n')
+                .map(word => word.trim())
+                .filter(word => word.length > 0);
+            
+            if (words.length === 0) {
+                selectedWord.textContent = '请先输入词库';
+                selectedWord.className = 'placeholder';
+                return;
+            }
+            
+            // 随机选择一个词语
+            const randomIndex = Math.floor(Math.random() * words.length);
+            currentSelectedWord = words[randomIndex];
+            
+            // 显示选中的词语
+            selectedWord.textContent = currentSelectedWord;
+            selectedWord.className = '';
+            
+            // 添加一点动画效果
+            selectedWord.style.transform = 'scale(0.8)';
+            setTimeout(() => {
+                selectedWord.style.transform = 'scale(1)';
+            }, 100);
+        }
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', initPage);
+    </script>
+</body>
+</html>
